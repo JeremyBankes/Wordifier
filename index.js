@@ -25,8 +25,8 @@ function replaceWord(word, callback) {
                     value.synonyms.forEach(synonym => accumulator.push(synonym.term));
                     return accumulator;
                 }, []);
-                // callback(synonyms.sort((a, b) => a.length - b.length)[0]);
-                callback(synonyms[Math.floor(Math.random() * synonyms.length)]);
+                callback(synonyms.sort((a, b) => a.length - b.length)[0]);
+                // callback(synonyms[Math.floor(Math.random() * synonyms.length)]);
             } else {
                 callback(word);
             }
