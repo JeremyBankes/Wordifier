@@ -1,48 +1,26 @@
-var fs = require('fs');
-const https = require('https');
-const { join } = require('path');
+const express = require('express');
+const wordify = require('./wordifier.js');
 
-const URL = `https://tuna.thesaurus.com/pageData/`;
+const PORT = 80;
 
-let phrase = "How are you this fine day?";
+const app = express();
 
-wordify(phrase, (newPhrase) => {
-    console.log(newPhrase);
-});
+app.use(express.json());
+app.use(express.static('public'));
 
-function replaceWord(word, callback) {
-    word = word.replace(/[^A-Za-z]/, '');
-    https.get(`${URL}${word}`, (res) => {
-        console.log(res.statusCode);
-        let data = []
-        res.on("data", (chunk) => {
-            data.push(chunk);
+app.post('/wordify', (req, res) => {
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    const message = req.body.message;
+    if (message.split(' ').length > 20) {
+        wordify(message, (result) => {
+            res.json({ content: 'Please keep your messages shorter than 20 words as to not work the Thesaurus API too hard.' });
         });
-        res.on("end", () => {
-            let json = JSON.parse(Buffer.concat(data));
-            if (json.data) {
-                let synonyms = json.data.definitionData.definitions.reduce((accumulator, value) => {
-                    value.synonyms.forEach(synonym => accumulator.push(synonym.term));
-                    return accumulator;
-                }, []);
-                callback(synonyms.sort((a, b) => a.length - b.length)[0]);
-                // callback(synonyms[Math.floor(Math.random() * synonyms.length)]);
-            } else {
-                callback(word);
-            }
-        });
-    });
-}
-
-function wordify(phrase, callback) {
-    let words = phrase.split(" ");
-    let counter = 0;
-    let count = words.length;
-    for (let i = 0; i < words.length; i++) {
-        replaceWord(words[i], (newWord) => {
-            words[i] = words[i].replace(/[A-Za-z]+/, newWord);
-            counter++;
-            if (counter == count) callback(words.join(' '));
+    } else {
+        wordify(message, (result) => {
+            console.log(`Translated "${message}" to "${result}" for ${ip}`);
+            res.json({ content: result });
         });
     }
-}
+});
+
+app.listen(PORT, () => console.log(`Server now listening on port ${PORT}`));

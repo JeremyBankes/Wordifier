@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/JeremyBankes/Wordifier/issues"
   },
-  "homepage": "https://github.com/JeremyBankes/Wordifier#readme"
+  "homepage": "https://github.com/JeremyBankes/Wordifier#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
